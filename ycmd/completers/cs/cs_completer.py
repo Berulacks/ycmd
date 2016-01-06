@@ -198,6 +198,9 @@ class CsharpCompleter( Completer ):
       'FixIt'                            : ( lambda self, request_data, args:
          self._SolutionSubcommand( request_data,
                                    method = '_FixIt' ) ),
+      'FindUsages'                       : ( lambda self, request_data, args:
+         self._SolutionSubcommand( request_data,
+                                   method = '_FindUsages' ) ), 
       'GetDoc'                           : ( lambda self, request_data, args:
          self._SolutionSubcommand( request_data,
                                    method = '_GetDoc' ) ),
@@ -521,6 +524,22 @@ class CsharpSolutionCompleter:
 
     return responses.BuildFixItResponse( fixits )
 
+  def _FindUsages( self, request_data ):
+    """ Show the usages of the identifier under the cursor """
+    usages = self._GetResponse( '/findusages',
+                                    self._DefaultParameters( request_data ) )
+
+    usagesResponse = []
+
+    for usage in usages['QuickFixes']:
+	usageLocation = responses.BuildGoToResponse( 
+            str(usage['FileName']), 
+            usage['Line'],
+            usage['Column'],
+            str(usage['Text']).replace( '\t', '    ' ))
+        usagesResponse.append( usageLocation )
+
+    return usagesResponse
 
   def _GetDoc( self, request_data ):
     request = self._DefaultParameters( request_data )
